@@ -1,0 +1,22 @@
+services:
+
+  mysql:
+    image: mysql:8.4
+    container_name: mysql-api-rest
+
+    restart: always
+
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: api_rest
+      MYSQL_USER: api_user
+      MYSQL_PASSWORD: api123
+
+    ports:
+      - "3306:3306"
+
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:
