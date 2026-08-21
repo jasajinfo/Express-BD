@@ -1,66 +1,180 @@
-import express from 'express' // importa o framework Express
+import express from 'express'
+import alunoRoutes from './routes/alunoRoutes.js'
 
-const app =  express()
+// ANTIGO:
+// O pool era importado diretamente no app.js.
+// Na nova arquitetura, o acesso ao banco ficará no Repository.
+// import pool from './database/pool.js'
 
-// Express deve interpretar o corpo (body) como JSON
+const app = express()
+
+// Express interpreta o corpo (body) como JSON
 app.use(express.json())
 
-// Mock
-const alunos = [
-        {id: 1, nome: 'Bruno', curso: 'ADS'},
-        {id: 2, nome: 'Maria', curso: 'ADS'},
-        {id: 3, nome: 'Lara', curso: 'ADS'},
-        {id: 4, nome: 'José', curso: 'ADS'}
-]
 
-// Função auxiliar
-function buscarAlunoPorId(id) {
-    return alunos.filter( aluno => aluno.id == id ) // retorna o registro(aluno). Vai comparar o id do item aluno (da lista) com o id passado
-}
+// ======================================================
+// CÓDIGO ANTIGO - MOCK EM MEMÓRIA
+// ======================================================
 
-function buscarIndexAluno(id) {
-    return alunos.findIndex( aluno => aluno.id == id ) // retorna o index
-}
+// const alunos = [
+//     { id: 1, nome: 'Bruno', curso: 'ADS' },
+//     { id: 2, nome: 'Maria', curso: 'ADS' },
+//     { id: 3, nome: 'Lara', curso: 'ADS' },
+//     { id: 4, nome: 'José', curso: 'ADS' }
+// ]
 
-// Criando a rota raiz
-app.get('/', (req, res) => {  // request = requisição do cliente e response = resposta enviada pelo servidor
-    res.send('Minha API REST com Express') // resposta do servidor
+
+// ======================================================
+// FUNÇÕES AUXILIARES ANTIGAS
+// ======================================================
+
+// function buscarAlunoPorId(id) {
+//     return alunos.filter(aluno => aluno.id == id)
+// }
+
+// function buscarIndexAluno(id) {
+//     return alunos.findIndex(aluno => aluno.id == id)
+// }
+
+
+// ======================================================
+// ROTA RAIZ - CONTINUA ATIVA
+// ======================================================
+
+app.get('/', (req, res) => {
+    res.send('Minha API REST com Express')
 })
 
-// Rota lista alunos - GET
-app.get('/alunos', (req,res) => {
-    res.status(200).send(alunos); // 200: A solicitação foi bem-sucedida.
-})
 
-// Rota lista alunos - POST (adiciona um novo aluno na lista)
-app.post('/alunos', (req,res) => {
-    alunos.push(req.body)
-    res.status(201).send('Aluno cadastrado com sucesso!'); // 201: A requisição foi bem sucedida e um novo recurso foi criado como resultado.
-})
+// ======================================================
+// ROTAS ANTIGAS - MOCK
+// ======================================================
 
-// Delete
-app.delete('/alunos/:id', (req,res) => {
-    let index = buscarIndexAluno(req.params.id) 
-    alunos.splice(index, 1) // 2º parametro indica a quantidade de itens a serem removidos
-    res.send(`Aluno com id ${req.params.id} excluido com sucesso`)
-})
-
-// Buscar aluno por id
-app.get('/alunos/:id', (req,res) => {
-    let index = buscarAlunoPorId(req.params.id) 
-    res.send(index)
-})
-
-// Update
-app.put('/alunos/:id', (req,res) => {
-    let index = buscarIndexAluno(req.params.id) 
-    alunos[index].nome = req.body.nome
-    alunos[index].curso = req.body.curso
-    res.send(alunos)
-})
-
-export default app; //preciso exportar para usar em outros módulos
+// GET - listar todos os alunos do array
+//
+// app.get('/alunos', (req, res) => {
+//     res.status(200).send(alunos)
+// })
 
 
+// POST - cadastrar aluno no array
+//
+// app.post('/alunos', (req, res) => {
+//     alunos.push(req.body)
+//
+//     res.status(201).send(
+//         'Aluno cadastrado com sucesso!'
+//     )
+// })
 
 
+// DELETE - excluir aluno do array
+//
+// app.delete('/alunos/:id', (req, res) => {
+//     let index = buscarIndexAluno(req.params.id)
+//
+//     alunos.splice(index, 1)
+//
+//     res.send(
+//         `Aluno com id ${req.params.id} excluido com sucesso`
+//     )
+// })
+
+
+// GET por ID - buscar no array
+//
+// app.get('/alunos/:id', (req, res) => {
+//     let aluno = buscarAlunoPorId(req.params.id)
+//
+//     res.send(aluno)
+// })
+
+
+// PUT - atualizar aluno no array
+//
+// app.put('/alunos/:id', (req, res) => {
+//     let index = buscarIndexAluno(req.params.id)
+//
+//     alunos[index].nome = req.body.nome
+//     alunos[index].curso = req.body.curso
+//
+//     res.send(alunos)
+// })
+
+
+// ======================================================
+// ACESSO DIRETO AO MYSQL - VERSÃO INTERMEDIÁRIA
+// ======================================================
+
+// Esta versão também ficará comentada porque agora
+// utilizaremos Route -> Controller -> Repository -> MySQL.
+
+
+// GET /alunos diretamente pelo pool
+//
+// app.get('/alunos', async (req, res) => {
+//     try {
+//
+//         const [rows] = await pool.query(
+//             'SELECT * FROM alunos'
+//         )
+//
+//         res.status(200).json(rows)
+//
+//     } catch (error) {
+//
+//         console.error(error)
+//
+//         res.status(500).json({
+//             mensagem: 'Erro ao consultar alunos'
+//         })
+//     }
+// })
+
+
+// GET /alunos/:id diretamente pelo pool
+//
+// app.get('/alunos/:id', async (req, res) => {
+//     try {
+//
+//         const { id } = req.params
+//
+//         const [rows] = await pool.query(
+//             'SELECT * FROM alunos WHERE id = ?',
+//             [id]
+//         )
+//
+//         if (rows.length === 0) {
+//             return res.status(404).json({
+//                 mensagem: 'Aluno não encontrado'
+//             })
+//         }
+//
+//         res.status(200).json(rows[0])
+//
+//     } catch (error) {
+//
+//         console.error(error)
+//
+//         res.status(500).json({
+//             mensagem: 'Erro ao consultar aluno'
+//         })
+//     }
+// })
+
+
+// ======================================================
+// NOVA ARQUITETURA - ATIVA
+// ======================================================
+
+// Todas as rotas iniciadas por /alunos serão encaminhadas
+// para alunoRoutes.js.
+
+app.use('/alunos', alunoRoutes)
+
+
+// ======================================================
+// EXPORTAÇÃO DA APLICAÇÃO
+// ======================================================
+
+export default app
