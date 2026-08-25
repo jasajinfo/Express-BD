@@ -5,7 +5,7 @@ info:
 
 http:
   method: GET
-  url: http://localhost:3000/alunos/8
+  url: http://localhost:3000/alunos/4
   auth: inherit
 
 settings:
