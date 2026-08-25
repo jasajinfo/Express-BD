@@ -2,17 +2,18 @@ import express from 'express'
 
 import {
     listarAlunos,
-    buscarAluno
+    buscarAluno,
+    criarAluno,
+    atualizarAluno,
+    excluirAluno
 } from '../controllers/alunoController.js'
 
 const router = express.Router()
 
-// GET /alunos
-// → executa listarAlunos do Controller
+router.post('/', criarAluno)
 router.get('/', listarAlunos)
-
-// GET /alunos/:id
-// → executa buscarAluno do Controller
 router.get('/:id', buscarAluno)
+router.put('/:id', atualizarAluno)
+router.delete('/:id', excluirAluno)
 
 export default router
