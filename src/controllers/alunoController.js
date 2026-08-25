@@ -7,13 +7,13 @@ import {
 } from '../repositories/alunoRepository.js'
 
 function idInvalido(id) {
-    return !Number.isInteger(id) || id <= 0
+    return !Number.isInteger(id) || id <= 0 // Se não for inteiro OU for menor ou igual a zero
 }
 
 function dadosInvalidos(nome, curso) {
     return (
         typeof nome !== 'string' || nome.trim() === '' ||
-        typeof curso !== 'string' || curso.trim() === ''
+        typeof curso !== 'string' || curso.trim() === ''// Os dados são inválidos se o nome não for texto OU o nome estiver vazio OU o curso não for texto OU o curso estiver vazio
     )
 }
 
@@ -31,7 +31,7 @@ async function listarAlunos(req, res) {
 
 async function buscarAluno(req, res) {
     try {
-        const id = Number(req.params.id)
+        const id = Number(req.params.id) //serve para pegar o id que veio pela URL e convertê-lo para número.
 
         if (idInvalido(id)) {
             return res.status(400).json({
