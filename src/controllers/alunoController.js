@@ -66,10 +66,7 @@ async function criarAluno(req, res) {
             })
         }
 
-        const aluno = await create({
-            nome: nome.trim(),
-            curso: curso.trim()
-        })
+        const aluno = await create(nome, curso)
 
         return res
             .location(`/alunos/${aluno.id}`)
