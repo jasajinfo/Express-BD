@@ -1,153 +1,144 @@
-import {
-    findAll,
-    findById,
-    create,
-    update,
-    remove
-} from '../repositories/alunoRepository.js'
+import * as alunoService from '../services/alunoService.js';
 
-function idInvalido(id) {
-    return !Number.isInteger(id) || id <= 0 // Se não for inteiro OU for menor ou igual a zero
-}
-
-function dadosInvalidos(nome, curso) {
-    return (
-        typeof nome !== 'string' || nome.trim() === '' ||
-        typeof curso !== 'string' || curso.trim() === ''// Os dados são inválidos se o nome não for texto OU o nome estiver vazio OU o curso não for texto OU o curso estiver vazio
-    )
-}
-
-async function listarAlunos(req, res) {
+// LISTAR TODOS
+export async function listarAlunos(req, res) {
     try {
-        const alunos = await findAll()
-        return res.status(200).json(alunos)
-    } catch (error) {
-        console.error(error)
+        const alunos = await alunoService.findAll();
+
+        return res.json(alunos);
+    } catch (erro) {
         return res.status(500).json({
-            mensagem: 'Erro ao consultar alunos'
-        })
+            erro: 'Erro ao listar alunos'
+        });
     }
 }
 
-async function buscarAluno(req, res) {
-    try {
-        const id = Number(req.params.id) //serve para pegar o id que veio pela URL e convertê-lo para número.
 
-        if (idInvalido(id)) {
+// BUSCAR POR ID
+export async function buscarAluno(req, res) {
+    try {
+        const id = Number(req.params.id);
+
+        if (!Number.isInteger(id) || id <= 0) {
             return res.status(400).json({
-                mensagem: 'ID inválido'
-            })
+                erro: 'ID inválido'
+            });
         }
 
-        const aluno = await findById(id)
+        const aluno = await alunoService.findById(id);
 
         if (!aluno) {
             return res.status(404).json({
-                mensagem: 'Aluno não encontrado'
-            })
+                erro: 'Aluno não encontrado'
+            });
         }
 
-        return res.status(200).json(aluno)
-    } catch (error) {
-        console.error(error)
+        return res.json(aluno);
+
+    } catch (erro) {
         return res.status(500).json({
-            mensagem: 'Erro ao consultar aluno'
-        })
+            erro: 'Erro ao buscar aluno'
+        });
     }
 }
 
-async function criarAluno(req, res) {
-    try {
-        const { nome, curso } = req.body
 
-        if (dadosInvalidos(nome, curso)) {
+// CADASTRAR
+export async function criarAluno(req, res) {
+    try {
+        const { nome, curso } = req.body;
+
+        if (
+            typeof nome !== 'string' || nome.trim() === '' ||
+            typeof curso !== 'string' || curso.trim() === ''
+        ) {
             return res.status(400).json({
-                mensagem: 'Nome e curso são obrigatórios'
-            })
+                erro: 'Nome e curso são obrigatórios'
+            });
         }
 
-        const aluno = await create(nome, curso)
+        const aluno = await alunoService.create(
+            nome.trim(),
+            curso.trim()
+        );
 
-        return res
-            .location(`/alunos/${aluno.id}`)
-            .status(201)
-            .json(aluno)
-    } catch (error) {
-        console.error(error)
+        return res.status(201).json(aluno);
+
+    } catch (erro) {
         return res.status(500).json({
-            mensagem: 'Erro ao cadastrar aluno'
-        })
+            erro: 'Erro ao cadastrar aluno'
+        });
     }
 }
 
-async function atualizarAluno(req, res) {
+
+// ATUALIZAR
+export async function atualizarAluno(req, res) {
     try {
-        const id = Number(req.params.id)
-        const { nome, curso } = req.body
+        const id = Number(req.params.id);
+        const { nome, curso } = req.body;
 
-        if (idInvalido(id)) {
+        if (!Number.isInteger(id) || id <= 0) {
             return res.status(400).json({
-                mensagem: 'ID inválido'
-            })
+                erro: 'ID inválido'
+            });
         }
 
-        if (dadosInvalidos(nome, curso)) {
+        if (
+            typeof nome !== 'string' || nome.trim() === '' ||
+            typeof curso !== 'string' || curso.trim() === ''
+        ) {
             return res.status(400).json({
-                mensagem: 'Nome e curso são obrigatórios'
-            })
+                erro: 'Nome e curso são obrigatórios'
+            });
         }
 
-        const aluno = await update(id, {
-            nome: nome.trim(),
-            curso: curso.trim()
-        })
+        const aluno = await alunoService.update(
+            id,
+            nome.trim(),
+            curso.trim()
+        );
 
         if (!aluno) {
             return res.status(404).json({
-                mensagem: 'Aluno não encontrado'
-            })
+                erro: 'Aluno não encontrado'
+            });
         }
 
-        return res.status(200).json(aluno)
-    } catch (error) {
-        console.error(error)
+        return res.json(aluno);
+
+    } catch (erro) {
         return res.status(500).json({
-            mensagem: 'Erro ao atualizar aluno'
-        })
+            erro: 'Erro ao atualizar aluno'
+        });
     }
 }
 
-async function excluirAluno(req, res) {
+
+// EXCLUIR
+export async function excluirAluno(req, res) {
     try {
-        const id = Number(req.params.id)
+        const id = Number(req.params.id);
 
-        if (idInvalido(id)) {
+        if (!Number.isInteger(id) || id <= 0) {
             return res.status(400).json({
-                mensagem: 'ID inválido'
-            })
+                erro: 'ID inválido'
+            });
         }
 
-        const removido = await remove(id)
+        const excluido = await alunoService.remove(id);
 
-        if (!removido) {
+        if (!excluido) {
             return res.status(404).json({
-                mensagem: 'Aluno não encontrado'
-            })
+                erro: 'Aluno não encontrado'
+            });
         }
 
-        return res.status(204).send()
-    } catch (error) {
-        console.error(error)
-        return res.status(500).json({
-            mensagem: 'Erro ao excluir aluno'
-        })
-    }
-}
+        return res.status(204).send();
 
-export {
-    listarAlunos,
-    buscarAluno,
-    criarAluno,
-    atualizarAluno,
-    excluirAluno
+    } catch (erro) {
+        return res.status(500).json({
+            erro: 'Erro ao excluir aluno'
+        });
+    }
 }
